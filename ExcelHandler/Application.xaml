@@ -4,6 +4,9 @@
     xmlns:local="clr-namespace:ExcelHandler"
     StartupUri="MainWindow.xaml">
     <Application.Resources>
-        
+        <ResourceDictionary>
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+            <local:MainViewModel x:Key="MainViewModel"/>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

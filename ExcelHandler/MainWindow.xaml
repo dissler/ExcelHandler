@@ -5,8 +5,31 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ExcelHandler"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="Babby's First Excel Handler!" Height="350" Width="525"
+        DataContext="{Binding Source={StaticResource MainViewModel}}">
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <DockPanel Grid.Row="0" Height="30" Margin="5"
+                   Visibility="{Binding FileLoaded, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <TextBlock VerticalAlignment="Center"
+                       FontWeight="Bold"
+                       Text="Select a Table:"/>
+            <ComboBox x:Name="TableSelect" MinWidth="140"
+                      Margin="10,0" HorizontalAlignment="Left" VerticalAlignment="Center"
+                      ItemsSource="{Binding TableList}"
+                      SelectedIndex="{Binding SelectedTable, UpdateSourceTrigger=PropertyChanged}"/>
+        </DockPanel>
+        <DataGrid Grid.Row="1" Margin="5"
+                  CanUserAddRows="False"
+                  ItemsSource="{Binding GridView}"
+                  Visibility="{Binding FileLoaded, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        <Button Grid.Row="2" Height="25" MinWidth="140"
+                Margin="5" HorizontalAlignment="Center"
+                Content="Load Me an Excel!"
+                Command="{Binding LoadExcel}"/>
     </Grid>
 </Window>
