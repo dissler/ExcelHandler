@@ -1,18 +1,23 @@
 ﻿Imports System.Collections.ObjectModel
 Imports System.ComponentModel
 Imports System.Data
-Imports Microsoft.Office.Interop.Excel
 Imports Microsoft.Win32
 Imports Excel = Microsoft.Office.Interop.Excel
 
 Public Class MainViewModel
     Implements INotifyPropertyChanged
 
+    #Region "Fields"
+
     ' DataSet to hold all worksheets from excel file.
-    Private _sheetSet as new DataSet
+    Private _sheetSet as New DataSet
 
     ' DataView that the DataGrid uses to display data.
     Private _gridView As New DataView
+
+    #End Region ' Fields
+
+    #Region "Properties"
 
     Public Property GridView as DataView
         Get
@@ -80,6 +85,10 @@ Public Class MainViewModel
         End Set
     End Property
 
+    #End Region ' Properties
+
+    #Region "Methods"
+
     ' This is run when the Button is clicked
     Private Sub LoadExcelCommand()
 
@@ -94,8 +103,10 @@ Public Class MainViewModel
         Try
             ' Open instance of excel, create new DataSet, and read file.
             Dim xl As New Excel.Application
-            Dim xlBooks As Workbooks = xl.Workbooks
-            Dim thisFile As Workbook = xlBooks.Open(openFile.FileName)
+            xl.DisplayAlerts = false
+            xl.ScreenUpdating = false
+            Dim xlBooks As Excel.Workbooks = xl.Workbooks
+            Dim thisFile As Excel.Workbook = xlBooks.Open(openFile.FileName)
             Dim returnSet As New DataSet
             Dim newTableList As New List(Of String)
 
@@ -103,10 +114,10 @@ Public Class MainViewModel
             For s As Integer = 1 To thisFile.Sheets.Count
 
                 ' Make a new DataTable to hold the values from the sheet.
-                Dim returnTable As New System.Data.DataTable
-                Dim thisSheet As Worksheet = thisFile.Sheets(s)
+                Dim returnTable As New DataTable
+                Dim thisSheet As Excel.Worksheet = thisFile.Sheets(s)
                 returnTable.TableName = thisSheet.Name
-                Dim thisRange as Range = thisSheet.UsedRange
+                Dim thisRange as Excel.Range = thisSheet.UsedRange
 
                 ' Create columns in the new DataTable for each column in the sheet's used range.
                 For c As Integer = 1 To thisRange.Columns.Count
@@ -121,12 +132,15 @@ Public Class MainViewModel
 
                     ' Read each column in the excel row, add values to the new DataRow
                     For c As Integer = 1 To thisRange.Columns.Count
-                        newRow(c - 1) = thisRange.Cells(r, c).Value.ToString()
+                        Dim thisCell = thisRange.Cells(r, c).Value
+                        If thisCell IsNot Nothing
+                            newRow(c - 1) = thisRange.Cells(r, c).Value.ToString()
+                        End If
                     Next
 
                     ' Add the new DataRow to the DataTable and output progress to the Console.
                     returnTable.Rows.Add(newRow)
-                    Console.WriteLine(String.Format("Read {0} row(s) from sheet {1}.", r - 1, s))
+                    Console.WriteLine(String.Format("Read {0}/{1} row(s) from sheet {2}/{3}.", r, thisRange.Rows.Count, s, thisFile.Sheets.Count))
                 Next
 
                 ' Add the new DataTable to the DataSet, and the new
@@ -153,10 +167,12 @@ Public Class MainViewModel
 
         Catch ex As Exception
             Me._fileLoaded = False
-            MessageBox.Show(String.Format(ex.Message), "Error Reading File")
+            MessageBox.Show(String.Format("{0}{1}{2}", ex.Message, vbCrLf, ex.StackTrace), "Error Reading File")
         End Try
 
     End Sub
+
+    #End Region ' Methods
 
     #Region "Interface Implementation Stuff"
 
@@ -172,6 +188,6 @@ Public Class MainViewModel
 
     Public Event PropertyChanged As PropertyChangedEventHandler Implements INotifyPropertyChanged.PropertyChanged
     
-    #End Region
+    #End Region ' Interface Implementation Stuff
 
 End Class
