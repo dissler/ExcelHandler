@@ -12,42 +12,33 @@ Public Class MainViewModel
     ' DataSet to hold all worksheets from excel file.
     Private _sheetSet as New DataSet
 
-    ' DataView that the DataGrid uses to display data.
-    Private _gridView As New DataView
-
     #End Region ' Fields
 
     #Region "Properties"
 
-    Public Property GridView as DataView
+    ' DataView that the DataGrid uses to display data.
+    Public ReadOnly Property GridView As DataView
         Get
-            Return Me._gridView
-        End Get
-        Set(value as DataView)
-            If Me._gridView.Equals(value) Then
-                Return
+            If Me._sheetSet.Tables.Count > 0
+                Return Me._sheetSet.Tables(SelectedTableIndex).DefaultView
             End If
-            Me._gridView = value
-            NotifyPropertyChanged("GridView")
-        End Set
+            Return New DataView()
+        End Get
     End Property
 
     ' Keeps track of which table in the combo box is selected.
-    Private _selectedTable as Integer
+    Private _selectedTableIndex as Integer = 0
 
-    Public Property SelectedTable As Integer
+    Public Property SelectedTableIndex As Integer
         Get
-            Return _selectedTable
+            Return _selectedTableIndex
         End Get
         Set(value As Integer)
-            If Me._selectedTable = value Then
-                Return
-            End If
-            Me._selectedTable = value
-            NotifyPropertyChanged("SelectedTable")
+            Me._selectedTableIndex = value
+            NotifyPropertyChanged("SelectedTableIndex")
 
             ' ...and sets the DataView to be of the selected DataTable
-            Me.GridView = Me._sheetSet.Tables(SelectedTable).DefaultView
+            NotifyPropertyChanged("GridView")
         End Set
     End Property
 
@@ -90,7 +81,7 @@ Public Class MainViewModel
     #Region "Methods"
 
     ' This is run when the Button is clicked
-    Private Sub LoadExcelCommand()
+    Private Sub LoadExcel()
 
         ' Prompt user for file
         Dim openFile = New OpenFileDialog
@@ -161,8 +152,7 @@ Public Class MainViewModel
             Me.FileLoaded = True
 
             ' Display the first DataTable
-            Me.SelectedTable = 0
-            Me.GridView = Me._sheetSet.Tables(0).DefaultView
+            Me.SelectedTableIndex = 0
             Console.WriteLine("Done!")
 
         Catch ex As Exception
@@ -174,9 +164,9 @@ Public Class MainViewModel
 
     #End Region ' Methods
 
-    #Region "Interface Implementation Stuff"
+    #Region "UI Implementation Stuff"
 
-    Public Property LoadExcel as ICommand = New DelegateCommand(AddressOf LoadExcelCommand, AddressOf CanLoadExcel)
+    Public Property LoadExcelCommand as ICommand = New DelegateCommand(AddressOf LoadExcel, AddressOf CanLoadExcel)
 
     Private Function CanLoadExcel(ByVal param as Object)
         Return True
@@ -188,6 +178,6 @@ Public Class MainViewModel
 
     Public Event PropertyChanged As PropertyChangedEventHandler Implements INotifyPropertyChanged.PropertyChanged
     
-    #End Region ' Interface Implementation Stuff
+    #End Region ' UI Implementation Stuff
 
 End Class
